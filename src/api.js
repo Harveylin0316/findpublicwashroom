@@ -1,5 +1,9 @@
 const API_BASE = 'https://data.moenv.gov.tw/api/v2/fac_p_07'
-const API_KEY = import.meta.env.VITE_MOENV_API_KEY || '846e44e1-8cc5-4893-ad87-c79d2d383706'
+const API_KEY = import.meta.env.VITE_MOENV_API_KEY
+
+if (!API_KEY) {
+  console.error('Missing VITE_MOENV_API_KEY. Register at https://data.moenv.gov.tw/ and set it in your env.')
+}
 
 const stripTypeSuffix = (name) =>
   name?.replace(/(男廁所?|女廁所?|無障礙廁所?|親子廁所?|混合廁所?|性別友善廁所?|未設定)$/u, '').trim() || name
