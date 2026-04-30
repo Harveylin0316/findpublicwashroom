@@ -13,16 +13,6 @@ const RADIUS_OPTIONS = [
 ]
 
 const FILTER_DEFS = [
-  {
-    key: 'male',
-    label: '男',
-    match: (t) => t.types.includes('男廁所') || t.types.includes('混合廁所'),
-  },
-  {
-    key: 'female',
-    label: '女',
-    match: (t) => t.types.includes('女廁所') || t.types.includes('混合廁所'),
-  },
   { key: 'accessible', label: '無障礙', match: (t) => t.types.includes('無障礙廁所') },
   { key: 'genderFriendly', label: '性別友善', match: (t) => t.types.includes('性別友善廁所') },
   {
@@ -31,6 +21,18 @@ const FILTER_DEFS = [
     match: (t) => t.types.includes('親子廁所') || t.diaper,
   },
 ]
+
+const GENDER_OPTIONS = [
+  { key: 'all', label: '全部' },
+  { key: 'male', label: '男' },
+  { key: 'female', label: '女' },
+]
+
+const matchGender = (t, gender) => {
+  if (gender === 'male') return t.types.includes('男廁所') || t.types.includes('混合廁所')
+  if (gender === 'female') return t.types.includes('女廁所') || t.types.includes('混合廁所')
+  return true
+}
 
 const FALLBACK = { lat: 25.0339, lng: 121.5645 }
 const GEO_OPTS = { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
@@ -42,6 +44,7 @@ export default function App() {
   const [mapCenter, setMapCenter] = useState(null)
   const [radiusKm, setRadiusKm] = useState(2)
   const [filters, setFilters] = useState({})
+  const [gender, setGender] = useState('all')
   const [toilets, setToilets] = useState([])
   const [status, setStatus] = useState('idle')
   const [error, setError] = useState(null)
@@ -102,10 +105,13 @@ export default function App() {
   }, [searchCenter, radiusKm])
 
   const visibleToilets = useMemo(() => {
+    let result = gender === 'all' ? toilets : toilets.filter((t) => matchGender(t, gender))
     const active = FILTER_DEFS.filter((f) => filters[f.key])
-    if (!active.length) return toilets
-    return toilets.filter((t) => active.every((f) => f.match(t)))
-  }, [toilets, filters])
+    if (active.length) {
+      result = result.filter((t) => active.every((f) => f.match(t)))
+    }
+    return result
+  }, [toilets, gender, filters])
 
   const nearestDist = userPosition && visibleToilets[0]
     ? haversineKm(userPosition, visibleToilets[0])
@@ -151,6 +157,11 @@ export default function App() {
     setRadiusKm(km)
   }
 
+  const selectGender = (g) => {
+    tap()
+    setGender(g)
+  }
+
   return (
     <div className="app">
       <header className="header">
@@ -172,6 +183,20 @@ export default function App() {
             )}
             {error && <span className="err">{error}</span>}
           </div>
+        </div>
+
+        <div className="segment" role="radiogroup" aria-label="廁所類型">
+          {GENDER_OPTIONS.map((g) => (
+            <button
+              key={g.key}
+              role="radio"
+              aria-checked={gender === g.key}
+              className={`segment-btn ${gender === g.key ? 'on' : ''}`}
+              onClick={() => selectGender(g.key)}
+            >
+              {g.label}
+            </button>
+          ))}
         </div>
 
         <div className="chips">
