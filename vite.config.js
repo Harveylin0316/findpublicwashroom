@@ -33,7 +33,7 @@ export default defineConfig({
         cleanupOutdatedCaches: true,
         runtimeCaching: [
           {
-            urlPattern: /^https:\/\/[abcd]\.basemaps\.cartocdn\.com\/.*/i,
+            urlPattern: /^https:\/\/api\.maptiler\.com\/maps\/.*/i,
             handler: 'CacheFirst',
             options: {
               cacheName: 'map-tiles',

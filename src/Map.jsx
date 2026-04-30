@@ -86,9 +86,8 @@ export default function Map({
       zoomControl={false}
     >
       <TileLayer
-        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OSM</a> &copy; <a href="https://carto.com/attributions">CARTO</a>'
-        url="https://{s}.basemaps.cartocdn.com/rastertiles/voyager/{z}/{x}/{y}{r}.png"
-        subdomains="abcd"
+        attribution='&copy; <a href="https://www.maptiler.com/copyright/">MapTiler</a> &copy; <a href="https://www.openstreetmap.org/copyright">OSM</a>'
+        url={`https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}{r}.png?key=${import.meta.env.VITE_MAPTILER_KEY}`}
         maxZoom={20}
         detectRetina={true}
       />
