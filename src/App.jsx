@@ -3,6 +3,7 @@ import Map from './Map'
 import BottomSheet from './BottomSheet'
 import { fetchToiletsInBbox } from './api'
 import { bboxAround, haversineKm } from './geo'
+import { tap } from './haptic'
 import './App.css'
 
 const RADIUS_OPTIONS = [
@@ -45,6 +46,7 @@ export default function App() {
   const [status, setStatus] = useState('idle')
   const [error, setError] = useState(null)
   const [selectedId, setSelectedId] = useState(null)
+  const [isLocating, setIsLocating] = useState(false)
   const mapRef = useRef(null)
   const hasFirstFix = useRef(false)
 
@@ -115,16 +117,19 @@ export default function App() {
   const showSearchHere = movedFromSearchCenter > radiusKm * 0.4
 
   const locateMe = () => {
+    tap()
     if (mapRef.current && userPosition) {
       mapRef.current.setView([userPosition.lat, userPosition.lng], 16)
     }
     if ('geolocation' in navigator) {
+      setIsLocating(true)
       navigator.geolocation.getCurrentPosition(
         (pos) => {
           setUserPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude })
           setUserAccuracy(pos.coords.accuracy)
+          setIsLocating(false)
         },
-        () => {},
+        () => setIsLocating(false),
         { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
       )
     }
@@ -132,11 +137,18 @@ export default function App() {
 
   const searchHere = () => {
     if (!mapCenter) return
+    tap()
     setSearchCenter(mapCenter)
   }
 
   const toggleFilter = (key) => {
+    tap()
     setFilters((f) => ({ ...f, [key]: !f[key] }))
+  }
+
+  const setRadius = (km) => {
+    tap()
+    setRadiusKm(km)
   }
 
   return (
@@ -170,7 +182,7 @@ export default function App() {
                 role="radio"
                 aria-checked={radiusKm === r.km}
                 className={`chip ${radiusKm === r.km ? 'on' : ''}`}
-                onClick={() => setRadiusKm(r.km)}
+                onClick={() => setRadius(r.km)}
               >
                 {r.label}
               </button>
@@ -205,20 +217,23 @@ export default function App() {
 
         {userPosition && (
           <button
-            className="fab fab-locate"
+            className={`fab fab-locate ${isLocating ? 'locating' : ''}`}
             onClick={locateMe}
+            disabled={isLocating}
             aria-label="重新定位並回到我的位置"
-            title="重新定位"
+            title={isLocating ? '正在抓 GPS…' : '重新定位'}
           >
-            📍
+            {isLocating ? <span className="spin" /> : '📍'}
           </button>
         )}
 
-        {showSearchHere && (
-          <button className="fab-search" onClick={searchHere}>
-            🔍 搜尋此區域
-          </button>
-        )}
+        <button
+          className={`fab-search ${showSearchHere ? 'active' : ''}`}
+          onClick={searchHere}
+          disabled={!showSearchHere}
+        >
+          {showSearchHere ? '在這裡找 →' : '拖地圖換位置'}
+        </button>
 
         <BottomSheet
           toilets={visibleToilets}

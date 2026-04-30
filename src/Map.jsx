@@ -25,6 +25,14 @@ const toiletIcon = L.divIcon({
   popupAnchor: [0, -28],
 })
 
+const selectedToiletIcon = L.divIcon({
+  className: 'toilet-icon selected',
+  html: '<div class="toilet-pin">🚻</div>',
+  iconSize: [40, 40],
+  iconAnchor: [20, 40],
+  popupAnchor: [0, -36],
+})
+
 function navigateUrl(lat, lng) {
   return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=walking`
 }
@@ -132,8 +140,14 @@ export default function Map({
 
       {toilets.map((t) => {
         const dist = userPosition ? haversineKm(userPosition, t) : null
+        const isSelected = t.id === selectedId
         return (
-          <Marker key={t.id} position={[t.lat, t.lng]} icon={toiletIcon}>
+          <Marker
+            key={t.id}
+            position={[t.lat, t.lng]}
+            icon={isSelected ? selectedToiletIcon : toiletIcon}
+            zIndexOffset={isSelected ? 1000 : 0}
+          >
             <Popup>
               <div className="popup">
                 <h3>{t.name}</h3>

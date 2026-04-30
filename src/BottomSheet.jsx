@@ -1,6 +1,7 @@
 import { useMemo, useState } from 'react'
 import { formatDistance, haversineKm, walkMinutes } from './geo'
 import { features, isBadGrade } from './features'
+import { tap } from './haptic'
 
 const MAX_LIST = 10
 
@@ -44,7 +45,7 @@ function ToiletRow({ t, dist, selected, onSelect }) {
         href={navigateUrl(t.lat, t.lng)}
         target="_blank"
         rel="noopener noreferrer"
-        onClick={(e) => e.stopPropagation()}
+        onClick={(e) => { e.stopPropagation(); tap() }}
       >
         帶我去 →
       </a>
@@ -60,6 +61,13 @@ export default function BottomSheet({
   status,
 }) {
   const [expanded, setExpanded] = useState(false)
+  const [hasExpanded, setHasExpanded] = useState(false)
+
+  const toggleExpand = () => {
+    tap()
+    setExpanded((e) => !e)
+    setHasExpanded(true)
+  }
 
   const list = useMemo(() => {
     if (!userPosition) return toilets.slice(0, MAX_LIST)
@@ -112,16 +120,19 @@ export default function BottomSheet({
   return (
     <div className={`sheet ${expanded ? 'expanded' : 'collapsed'}`}>
       <button
-        className="sheet-handle-btn"
-        onClick={() => setExpanded((e) => !e)}
-        aria-label={expanded ? '收起清單' : '展開清單'}
+        className={`sheet-handle-btn ${expanded ? 'expanded' : ''}`}
+        onClick={toggleExpand}
+        aria-label={expanded ? '收起清單' : '展開清單看更多'}
       >
         <div className="sheet-handle" />
+        {!expanded && !hasExpanded && (
+          <div className="sheet-hint">上拉看更多 ↑</div>
+        )}
       </button>
 
       {!expanded && (
         <div className="sheet-collapsed-row">
-          <div className="sheet-row-main" onClick={() => setExpanded(true)}>
+          <div className="sheet-row-main" onClick={toggleExpand}>
             <div className="sheet-collapsed-label">最近一間</div>
             <div className="sheet-row-name">{nearest.name}</div>
             <div className="sheet-row-meta">
@@ -134,6 +145,7 @@ export default function BottomSheet({
             href={navigateUrl(nearest.lat, nearest.lng)}
             target="_blank"
             rel="noopener noreferrer"
+            onClick={() => tap()}
           >
             帶我去 →
           </a>
