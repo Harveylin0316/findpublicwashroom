@@ -1,10 +1,28 @@
 import { useMemo, useState } from 'react'
 import { formatDistance, haversineKm, walkMinutes } from './geo'
+import { features, isBadGrade } from './features'
 
 const MAX_LIST = 10
 
 function navigateUrl(lat, lng) {
   return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=walking`
+}
+
+function FeatIcons({ t }) {
+  return (
+    <div className="feat-icons">
+      {features(t).map((f) => (
+        <span key={f.icon} className="feat-icon" title={f.label} aria-label={f.label}>
+          {f.icon}
+        </span>
+      ))}
+      {isBadGrade(t.grade) && (
+        <span className="feat-icon warn" title="不合格" aria-label="不合格">
+          ⚠
+        </span>
+      )}
+    </div>
+  )
 }
 
 function ToiletRow({ t, dist, selected, onSelect }) {
@@ -17,12 +35,8 @@ function ToiletRow({ t, dist, selected, onSelect }) {
       <div className="sheet-row-main">
         <div className="sheet-row-name">{t.name}</div>
         <div className="sheet-row-meta">
-          <span className={`tag-mini grade-${t.grade}`}>{t.grade}</span>
-          <span className="dim">·</span>
-          <span>{formatDistance(dist)}</span>
-          <span className="dim">·</span>
-          <span>走路約 {min} 分</span>
-          {t.diaper && <span className="tag-mini diaper">尿布檯</span>}
+          <span>{formatDistance(dist)} · {min} 分</span>
+          <FeatIcons t={t} />
         </div>
       </div>
       <a
@@ -111,9 +125,8 @@ export default function BottomSheet({
             <div className="sheet-collapsed-label">最近一間</div>
             <div className="sheet-row-name">{nearest.name}</div>
             <div className="sheet-row-meta">
-              <span>{formatDistance(distOf(nearest))}</span>
-              <span className="dim">·</span>
-              <span>走路約 {walkMinutes(distOf(nearest))} 分</span>
+              <span>{formatDistance(distOf(nearest))} · {walkMinutes(distOf(nearest))} 分</span>
+              <FeatIcons t={nearest} />
             </div>
           </div>
           <a

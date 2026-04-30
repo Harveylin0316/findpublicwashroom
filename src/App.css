@@ -461,30 +461,28 @@
   background: #1d4ed8;
 }
 
-.tag-mini {
-  font-size: 10px;
-  padding: 1px 5px;
-  border-radius: 3px;
+.feat-icons {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.feat-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 20px;
+  height: 20px;
+  padding: 0 4px;
+  border-radius: 4px;
   background: #f3f4f6;
   color: #374151;
+  font-size: 12px;
+  font-weight: 500;
+  line-height: 1;
 }
 
-.tag-mini.grade-特優級 {
-  background: #dcfce7;
-  color: #14532d;
-}
-
-.tag-mini.grade-優等級 {
-  background: #dbeafe;
-  color: #1e3a8a;
-}
-
-.tag-mini.grade-不合格 {
+.feat-icon.warn {
   background: #fee2e2;
   color: #991b1b;
-}
-
-.tag-mini.diaper {
-  background: #fef3c7;
-  color: #92400e;
 }

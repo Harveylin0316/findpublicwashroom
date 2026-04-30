@@ -12,10 +12,23 @@ const RADIUS_OPTIONS = [
 ]
 
 const FILTER_DEFS = [
+  {
+    key: 'male',
+    label: '男',
+    match: (t) => t.types.includes('男廁所') || t.types.includes('混合廁所'),
+  },
+  {
+    key: 'female',
+    label: '女',
+    match: (t) => t.types.includes('女廁所') || t.types.includes('混合廁所'),
+  },
   { key: 'accessible', label: '無障礙', match: (t) => t.types.includes('無障礙廁所') },
   { key: 'genderFriendly', label: '性別友善', match: (t) => t.types.includes('性別友善廁所') },
-  { key: 'topGrade', label: '特優級', match: (t) => t.grade === '特優級' },
-  { key: 'diaper', label: '尿布檯', match: (t) => t.diaper },
+  {
+    key: 'family',
+    label: '親子',
+    match: (t) => t.types.includes('親子廁所') || t.diaper,
+  },
 ]
 
 const FALLBACK = { lat: 25.0339, lng: 121.5645 }

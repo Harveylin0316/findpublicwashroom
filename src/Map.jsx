@@ -5,7 +5,8 @@ import 'leaflet/dist/leaflet.css'
 import iconUrl from 'leaflet/dist/images/marker-icon.png'
 import iconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png'
 import shadowUrl from 'leaflet/dist/images/marker-shadow.png'
-import { formatDistance, haversineKm } from './geo'
+import { formatDistance, haversineKm, walkMinutes } from './geo'
+import { features, isBadGrade } from './features'
 
 L.Icon.Default.mergeOptions({ iconUrl, iconRetinaUrl, shadowUrl })
 
@@ -135,16 +136,18 @@ export default function Map({
               <div className="popup">
                 <h3>{t.name}</h3>
                 <p className="addr">{t.address}</p>
-                <div className="tags">
-                  <span className={`tag grade-${t.grade}`}>{t.grade}</span>
-                  <span className="tag">{t.category}</span>
-                  {t.types.map((tp) => (
-                    <span key={tp} className="tag">{tp}</span>
+                <div className="feat-icons">
+                  {features(t).map((f) => (
+                    <span key={f.icon} className="feat-icon" title={f.label}>
+                      {f.icon}
+                    </span>
                   ))}
-                  {t.diaper && <span className="tag diaper">尿布檯</span>}
+                  {isBadGrade(t.grade) && (
+                    <span className="feat-icon warn" title="不合格">⚠</span>
+                  )}
                 </div>
                 {dist !== null && (
-                  <p className="dist">距離 {formatDistance(dist)}</p>
+                  <p className="dist">{formatDistance(dist)} · {walkMinutes(dist)} 分</p>
                 )}
                 <a
                   className="nav-btn"
@@ -152,7 +155,7 @@ export default function Map({
                   target="_blank"
                   rel="noopener noreferrer"
                 >
-                  導航到這裡 →
+                  帶我去 →
                 </a>
               </div>
             </Popup>
