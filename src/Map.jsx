@@ -52,6 +52,7 @@ function InitialView({ position }) {
 
 export default function Map({
   userPosition,
+  userAccuracy,
   searchCenter,
   toilets,
   radiusKm,
@@ -85,9 +86,29 @@ export default function Map({
         />
       )}
 
+      {userPosition && userAccuracy && userAccuracy > 30 && (
+        <Circle
+          center={[userPosition.lat, userPosition.lng]}
+          radius={userAccuracy}
+          pathOptions={{
+            color: '#3b82f6',
+            weight: 1,
+            fillOpacity: 0.1,
+            dashArray: '4 4',
+          }}
+        />
+      )}
+
       {userPosition && (
         <Marker position={[userPosition.lat, userPosition.lng]} icon={userIcon}>
-          <Popup>你在這裡</Popup>
+          <Popup>
+            你在這裡
+            {userAccuracy !== null && (
+              <div style={{ fontSize: 11, color: '#6b7280', marginTop: 2 }}>
+                定位誤差約 ±{Math.round(userAccuracy)}m
+              </div>
+            )}
+          </Popup>
         </Marker>
       )}
 

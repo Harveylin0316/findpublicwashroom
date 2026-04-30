@@ -18,9 +18,11 @@ const FILTER_DEFS = [
 ]
 
 const FALLBACK = { lat: 25.0339, lng: 121.5645 }
+const GEO_OPTS = { enableHighAccuracy: true, timeout: 10000, maximumAge: 30000 }
 
 export default function App() {
   const [userPosition, setUserPosition] = useState(null)
+  const [userAccuracy, setUserAccuracy] = useState(null)
   const [searchCenter, setSearchCenter] = useState(null)
   const [mapCenter, setMapCenter] = useState(null)
   const [radiusKm, setRadiusKm] = useState(2)
@@ -29,6 +31,7 @@ export default function App() {
   const [status, setStatus] = useState('idle')
   const [error, setError] = useState(null)
   const mapRef = useRef(null)
+  const hasFirstFix = useRef(false)
 
   useEffect(() => {
     if (!('geolocation' in navigator)) {
@@ -38,19 +41,26 @@ export default function App() {
       return
     }
     setStatus('locating')
-    navigator.geolocation.getCurrentPosition(
-      (pos) => {
-        const p = { lat: pos.coords.latitude, lng: pos.coords.longitude }
-        setUserPosition(p)
+
+    const onPos = (pos) => {
+      const p = { lat: pos.coords.latitude, lng: pos.coords.longitude }
+      setUserPosition(p)
+      setUserAccuracy(pos.coords.accuracy)
+      if (!hasFirstFix.current) {
+        hasFirstFix.current = true
         setSearchCenter(p)
-      },
-      (err) => {
+      }
+    }
+    const onErr = (err) => {
+      if (!hasFirstFix.current) {
         setError(`無法取得位置：${err.message}`)
         setUserPosition(FALLBACK)
         setSearchCenter(FALLBACK)
-      },
-      { enableHighAccuracy: true, timeout: 10000 }
-    )
+      }
+    }
+
+    const watchId = navigator.geolocation.watchPosition(onPos, onErr, GEO_OPTS)
+    return () => navigator.geolocation.clearWatch(watchId)
   }, [])
 
   useEffect(() => {
@@ -90,8 +100,19 @@ export default function App() {
   const showSearchHere = movedFromSearchCenter > radiusKm * 0.4
 
   const locateMe = () => {
-    if (!userPosition || !mapRef.current) return
-    mapRef.current.setView([userPosition.lat, userPosition.lng], 16)
+    if (mapRef.current && userPosition) {
+      mapRef.current.setView([userPosition.lat, userPosition.lng], 16)
+    }
+    if ('geolocation' in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (pos) => {
+          setUserPosition({ lat: pos.coords.latitude, lng: pos.coords.longitude })
+          setUserAccuracy(pos.coords.accuracy)
+        },
+        () => {},
+        { enableHighAccuracy: true, timeout: 8000, maximumAge: 0 }
+      )
+    }
   }
 
   const searchHere = () => {
@@ -117,6 +138,9 @@ export default function App() {
                 {visibleToilets.length !== toilets.length && ` / ${toilets.length}`}
                 {' '}個
                 {nearestDist !== null && ` · 最近 ${(nearestDist * 1000).toFixed(0)}m`}
+                {userAccuracy !== null && userAccuracy > 100 && (
+                  <span className="acc-warn">　定位誤差 ±{Math.round(userAccuracy)}m</span>
+                )}
               </span>
             )}
             {error && <span className="err">{error}</span>}
@@ -155,6 +179,7 @@ export default function App() {
       <main className="main">
         <Map
           userPosition={userPosition}
+          userAccuracy={userAccuracy}
           searchCenter={searchCenter}
           toilets={visibleToilets}
           radiusKm={radiusKm}
@@ -166,8 +191,8 @@ export default function App() {
           <button
             className="fab fab-locate"
             onClick={locateMe}
-            aria-label="回到我的位置"
-            title="回到我的位置"
+            aria-label="重新定位並回到我的位置"
+            title="重新定位"
           >
             📍
           </button>
