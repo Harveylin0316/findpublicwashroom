@@ -126,7 +126,7 @@ export default function BottomSheet({
       >
         <div className="sheet-handle" />
         {!expanded && !hasExpanded && (
-          <div className="sheet-hint">上拉看更多 ↑</div>
+          <div className="sheet-hint">點擊看更多 ↑</div>
         )}
       </button>
 
