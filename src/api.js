@@ -5,8 +5,17 @@ if (!API_KEY) {
   console.error('Missing VITE_MOENV_API_KEY. Register at https://data.moenv.gov.tw/ and set it in your env.')
 }
 
-const stripTypeSuffix = (name) =>
-  name?.replace(/(男廁所?|女廁所?|無障礙廁所?|親子廁所?|混合廁所?|性別友善廁所?|未設定)$/u, '').trim() || name
+const stripTypeSuffix = (name) => {
+  if (!name) return name
+  return (
+    name
+      .replace(/\d+F(\d+)?/g, '')
+      .replace(/[一二三四五六七八九十]+樓/g, '')
+      .replace(/\d+樓/g, '')
+      .replace(/(男廁所?|女廁所?|無障礙廁所?|親子廁所?|混合廁所?|性別友善廁所?|未設定)$/u, '')
+      .trim() || name
+  )
+}
 
 export async function fetchToiletsInBbox({ minLat, maxLat, minLng, maxLng, limit = 1000 }) {
   const filters = [
@@ -29,7 +38,7 @@ export async function fetchToiletsInBbox({ minLat, maxLat, minLng, maxLng, limit
     const lng = parseFloat(r.longitude)
     if (Number.isNaN(lat) || Number.isNaN(lng)) continue
 
-    const key = `${lat.toFixed(6)},${lng.toFixed(6)}|${r.address || ''}`
+    const key = `${lat.toFixed(4)},${lng.toFixed(4)}|${r.address || ''}`
     const existing = grouped.get(key)
 
     if (existing) {
