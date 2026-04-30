@@ -11,3 +11,21 @@ export function features(t) {
 }
 
 export const isBadGrade = (grade) => grade === '不合格'
+
+// Categorize a location by who can use it.
+// Returns 'male' | 'female' | 'both'
+export function genderClass(t) {
+  const types = t.types || []
+  const hasShared = types.includes('混合廁所') || types.includes('性別友善廁所')
+  if (hasShared) return 'both'
+
+  const hasMale = types.includes('男廁所')
+  const hasFemale = types.includes('女廁所')
+  if (hasMale && hasFemale) return 'both'
+  if (hasMale) return 'male'
+  if (hasFemale) return 'female'
+
+  // Has only 親子/無障礙 records — accessible to all
+  return 'both'
+}
+

@@ -308,6 +308,16 @@
   transition: all 0.2s;
 }
 
+.toilet-icon.male .toilet-pin {
+  background: #dbeafe;
+  border-color: #1d4ed8;
+}
+
+.toilet-icon.female .toilet-pin {
+  background: #fce7f3;
+  border-color: #be185d;
+}
+
 .toilet-icon.selected .toilet-pin {
   width: 40px;
   height: 40px;

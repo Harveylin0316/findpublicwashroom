@@ -6,7 +6,7 @@ import iconUrl from 'leaflet/dist/images/marker-icon.png'
 import iconRetinaUrl from 'leaflet/dist/images/marker-icon-2x.png'
 import shadowUrl from 'leaflet/dist/images/marker-shadow.png'
 import { formatDistance, haversineKm, walkMinutes } from './geo'
-import { features, isBadGrade } from './features'
+import { features, genderClass, isBadGrade } from './features'
 
 L.Icon.Default.mergeOptions({ iconUrl, iconRetinaUrl, shadowUrl })
 
@@ -17,21 +17,27 @@ const userIcon = L.divIcon({
   iconAnchor: [9, 9],
 })
 
-const toiletIcon = L.divIcon({
-  className: 'toilet-icon',
-  html: '<div class="toilet-pin">🚻</div>',
-  iconSize: [32, 32],
-  iconAnchor: [16, 32],
-  popupAnchor: [0, -28],
+const EMOJI = { both: '🚻', male: '🚹', female: '🚺' }
+
+const makeIcon = (cls, selected) => L.divIcon({
+  className: `toilet-icon ${cls}${selected ? ' selected' : ''}`,
+  html: `<div class="toilet-pin">${EMOJI[cls]}</div>`,
+  iconSize: selected ? [40, 40] : [32, 32],
+  iconAnchor: selected ? [20, 40] : [16, 32],
+  popupAnchor: selected ? [0, -36] : [0, -28],
 })
 
-const selectedToiletIcon = L.divIcon({
-  className: 'toilet-icon selected',
-  html: '<div class="toilet-pin">🚻</div>',
-  iconSize: [40, 40],
-  iconAnchor: [20, 40],
-  popupAnchor: [0, -36],
-})
+const ICONS = {
+  both: makeIcon('both', false),
+  male: makeIcon('male', false),
+  female: makeIcon('female', false),
+}
+
+const SELECTED_ICONS = {
+  both: makeIcon('both', true),
+  male: makeIcon('male', true),
+  female: makeIcon('female', true),
+}
 
 function navigateUrl(lat, lng) {
   return `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}&travelmode=walking`
@@ -141,11 +147,13 @@ export default function Map({
       {toilets.map((t) => {
         const dist = userPosition ? haversineKm(userPosition, t) : null
         const isSelected = t.id === selectedId
+        const cls = genderClass(t)
+        const icon = isSelected ? SELECTED_ICONS[cls] : ICONS[cls]
         return (
           <Marker
             key={t.id}
             position={[t.lat, t.lng]}
-            icon={isSelected ? selectedToiletIcon : toiletIcon}
+            icon={icon}
             zIndexOffset={isSelected ? 1000 : 0}
           >
             <Popup>
