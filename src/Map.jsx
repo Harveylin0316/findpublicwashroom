@@ -50,16 +50,30 @@ function InitialView({ position }) {
   return null
 }
 
+function FlyToSelected({ toilet }) {
+  const map = useMap()
+  useEffect(() => {
+    if (toilet) {
+      map.flyTo([toilet.lat, toilet.lng], Math.max(map.getZoom(), 17), {
+        duration: 0.6,
+      })
+    }
+  }, [toilet, map])
+  return null
+}
+
 export default function Map({
   userPosition,
   userAccuracy,
   searchCenter,
   toilets,
+  selectedId,
   radiusKm,
   mapRef,
   onMapMove,
 }) {
   const center = userPosition || searchCenter || { lat: 25.0339, lng: 121.5645 }
+  const selectedToilet = toilets.find((t) => t.id === selectedId)
 
   return (
     <MapContainer
@@ -76,6 +90,7 @@ export default function Map({
       />
 
       <InitialView position={userPosition} />
+      <FlyToSelected toilet={selectedToilet} />
       <MoveTracker onMove={onMapMove} />
 
       {searchCenter && radiusKm && (

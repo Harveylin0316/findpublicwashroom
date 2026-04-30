@@ -25,6 +25,12 @@ export function bboxAround({ lat, lng }, radiusKm = 2) {
 }
 
 export function formatDistance(km) {
-  if (km < 1) return `${Math.round(km * 1000)} m`
-  return `${km.toFixed(1)} km`
+  if (km < 1) return `${Math.round(km * 1000)} 公尺`
+  return `${km.toFixed(1)} 公里`
+}
+
+// 直線距離 km → 估走路分鐘數
+// 假設 5 km/h 步行，× 1.3 路徑修正係數
+export function walkMinutes(km) {
+  return Math.max(1, Math.round(km * 15.6))
 }

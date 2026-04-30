@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from 'react'
 import Map from './Map'
+import BottomSheet from './BottomSheet'
 import { fetchToiletsInBbox } from './api'
 import { bboxAround, haversineKm } from './geo'
 import './App.css'
@@ -30,6 +31,7 @@ export default function App() {
   const [toilets, setToilets] = useState([])
   const [status, setStatus] = useState('idle')
   const [error, setError] = useState(null)
+  const [selectedId, setSelectedId] = useState(null)
   const mapRef = useRef(null)
   const hasFirstFix = useRef(false)
 
@@ -182,6 +184,7 @@ export default function App() {
           userAccuracy={userAccuracy}
           searchCenter={searchCenter}
           toilets={visibleToilets}
+          selectedId={selectedId}
           radiusKm={radiusKm}
           mapRef={mapRef}
           onMapMove={setMapCenter}
@@ -203,6 +206,14 @@ export default function App() {
             🔍 搜尋此區域
           </button>
         )}
+
+        <BottomSheet
+          toilets={visibleToilets}
+          userPosition={userPosition}
+          selectedId={selectedId}
+          onSelect={setSelectedId}
+          status={status}
+        />
       </main>
     </div>
   )
